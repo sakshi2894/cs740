@@ -1,8 +1,10 @@
-num_nodes = 6
+from random import seed
+from random import randint
+import numpy as np
+from scipy.optimize import linprog
 
-
+seed(1)
 # Topology
-
 nw_graph = {
     1: [2, 3, 7],
     2: [1, 4, 5],
@@ -39,6 +41,9 @@ flows = [
 
 rls = []
 gre = []
+ce = {}
+fl = []
+
 
 # Generate Rls
 def generate_rls_flow(ind, rl, node_index, arr):
@@ -95,39 +100,131 @@ def bfs_shortest_path(graph, start, goal):
             # mark node as explored
             explored.append(node)
 
-    # in case there's no path between the 2 nodes
-    #return "So sorry, but a connecting path doesn't exis
-
 
 def generate_edges(src, dest):
-    #print("src: %d, dest: %d" % (src, dest))
     path = bfs_shortest_path(nw_graph, src, dest)
-    #print("path: ", path)
     return path
 
 
 # Generate Gre
+
+# ASSUMPTIONS
+# 1. Different weights for different directions.
+# 2. Gre will be an array of dictionaries wrt rls not differentiating
+#    wrt flows (assuming fl will take care)
 def generate_gre():
     for i in range(0, len(rls)):
-        edges = []
-        gre.append([])
         for j in range(0, len(rls[i])):
+            edges = []
             for k in range(0, len(rls[i][j]) - 1):
-                edges = edges + generate_edges(rls[i][j][k], rls[i][j][k + 1])
+                gen_edges = generate_edges(rls[i][j][k], rls[i][j][k + 1])
 
-            print(edges)
-            for j in range(0, len(edges) - 1):
-                edge = str(edges[j]) + "-" + str(edges[j + 1])
-                gre[len(gre) - 1].append({edge: 5})
+                if k != 0:
+                    edges = edges + gen_edges[1:]
+                else:
+                    edges = edges + gen_edges
 
-            print(gre[len(gre) - 1])
+           # print(edges)
+            edge_weights = {}
+            for l in range(0, len(edges) - 1):
+                edge = str(edges[l]) + "-" + str(edges[l + 1])
+                edge_weights[edge] = randint(1, 5)
+
+            gre.append(edge_weights)
+
+
+# TODO: Generate random weights
+def generate_ce():
+    for key in nw_graph:
+        for val in nw_graph[key]:
+            ce[str(key) + "-" + str(val)] = randint(20, 50)
+
+
+def generate_fl():
+    for i in flows:
+        fl.append(randint(1, 5))
+
+
+def generate_data():
+    generate_rls()
+    generate_gre()
+    generate_ce()
+    generate_fl()
+
+    print(flows)
+    print(rls)
+    print(gre)
+    print(ce)
+    print(fl)
+
+
+def simplex():
+    c = []
+    eq1 = []
+    eq2 = []
+    eq5 = []
+    num_rls = 0
+    rls_arr = []
+
+    A = []
+    b = []
+
+    # Optimization function
+    for i in range(len(rls)):
+        f = fl[i]
+        rl_count = 0
+        for j in rls[i]:
+            c.append(f * -1)
+            num_rls = num_rls + 1
+            rl_count = rl_count + 1
+        rls_arr.append(rl_count)
+    constants = np.array(c)
+
+
+    # Equation 1
+    cum_rls = 0
+    for i in range(len(fl)):
+        arr = [0] * num_rls
+        for j in range(cum_rls, cum_rls + rls_arr[i]):
+            arr[j] = 1
+        cum_rls = cum_rls + rls_arr[i]
+        A.append(arr)
+        b.append(1)
+
+    # Equation 5
+    iterator = 0
+    for i in range(len(rls)):
+        for j in rls[i]:
+            arr = [0] * num_rls
+            arr[iterator] = -1
+            iterator = iterator + 1
+            A.append(arr)
+            b.append(0)
+
+
+    # Equation 2
+    for key in ce:
+        cum_rls = 0
+        arr = [0] * num_rls
+        for i in range(len(flows)):
+            for j in range(cum_rls, cum_rls + rls_arr[i]):
+                if key in gre[j]:
+                    arr[j] = fl[i] * gre[j][key]
+            cum_rls = cum_rls + rls_arr[i]
+        A.append(arr)
+        b.append(ce[key])
+
+    res = linprog(constants, A_ub=np.array(A), b_ub=np.array(b), bounds=(0, None),  method='simplex')
+    print('Optimal value:', res.fun, '\nX:', res.x)
+
+
+
+    print(A)
+
+
 
 def main():
-    generate_rls()
-    print(rls)
-    generate_gre()
-    #print(gre)
-
-
+    generate_data()
+    simplex()
 
 main()
