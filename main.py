@@ -44,6 +44,9 @@ gre = []
 ce = {}
 fl = []
 
+pm = {}
+qrm = []
+
 
 # Generate Rls
 def generate_rls_flow(ind, rl, node_index, arr):
@@ -133,7 +136,6 @@ def generate_gre():
             gre.append(edge_weights)
 
 
-# TODO: Generate random weights
 def generate_ce():
     for key in nw_graph:
         for val in nw_graph[key]:
@@ -145,24 +147,40 @@ def generate_fl():
         fl.append(randint(1, 5))
 
 
+def generate_pm():
+    for key in top_mbox:
+        pm[key] = randint(25, 30)
+
+
+def generate_qrm():
+    for i in range(0, len(rls)):
+        for j in range(0, len(rls[i])):
+            mbox_in_r = {}
+            for k in range(0, len(rls[i][j])):
+                if rls[i][j][k] in top_mbox:
+                    mbox_in_r[rls[i][j][k]] = randint(1,5)
+            qrm.append(mbox_in_r)
+
+
 def generate_data():
     generate_rls()
     generate_gre()
     generate_ce()
     generate_fl()
+    generate_pm()
+    generate_qrm()
 
     print(flows)
     print(rls)
     print(gre)
     print(ce)
     print(fl)
+    print(pm)
+    print(qrm)
 
 
 def simplex():
     c = []
-    eq1 = []
-    eq2 = []
-    eq5 = []
     num_rls = 0
     rls_arr = []
 
@@ -180,7 +198,6 @@ def simplex():
         rls_arr.append(rl_count)
     constants = np.array(c)
 
-
     # Equation 1
     cum_rls = 0
     for i in range(len(fl)):
@@ -190,17 +207,6 @@ def simplex():
         cum_rls = cum_rls + rls_arr[i]
         A.append(arr)
         b.append(1)
-
-    # Equation 5
-    iterator = 0
-    for i in range(len(rls)):
-        for j in rls[i]:
-            arr = [0] * num_rls
-            arr[iterator] = -1
-            iterator = iterator + 1
-            A.append(arr)
-            b.append(0)
-
 
     # Equation 2
     for key in ce:
@@ -214,17 +220,35 @@ def simplex():
         A.append(arr)
         b.append(ce[key])
 
+    # Equation 4
+    for key in pm:
+        cum_rls = 0
+        arr = [0] * num_rls
+        for i in range(len(flows)):
+            for j in range(cum_rls, cum_rls + rls_arr[i]):
+                if key in qrm[j]:
+                    arr[j] = fl[i] * qrm[j][key]
+            cum_rls = cum_rls + rls_arr[i]
+        A.append(arr)
+        b.append(pm[key])
+
+    # Equation 5
+    iterator = 0
+    for i in range(len(rls)):
+        for j in rls[i]:
+            arr = [0] * num_rls
+            arr[iterator] = -1
+            iterator = iterator + 1
+            A.append(arr)
+            b.append(0)
+
     res = linprog(constants, A_ub=np.array(A), b_ub=np.array(b), bounds=(0, None),  method='simplex')
     print('Optimal value:', res.fun, '\nX:', res.x)
-
-
-
-    print(A)
-
 
 
 def main():
     generate_data()
     simplex()
+
 
 main()
