@@ -175,8 +175,8 @@ def construct_LFG(graph, v_bw, v_cpu, index):
         for u_cap in eta[j]:
             for v_cap in eta[j+1]:
                 if u_cap in graph and v_cap in graph and u_cap != v_cap:
-                    shortest_path = dijkstra(graph, u_cap, v_cap, v_bw)
-                    #shortest_path = bfs_shortest_path(graph, u_cap, v_cap)
+                    #shortest_path = dijkstra(graph, u_cap, v_cap, v_bw)
+                    shortest_path = bfs_shortest_path(graph, u_cap, v_cap)
                 elif u_cap in graph and v_cap in graph and u_cap == v_cap:
                     shortest_path = [u_cap, v_cap]
                 #print('src,dest', u_cap, ' ', v_cap)
@@ -240,8 +240,16 @@ def RA_RA(index, flow, K):
         else:
             v_cpu[node] = 0
 
-    LFG, LFG_cost = construct_LFG(G_new, v_bw, v_cpu, index)
-    print(LFG)
+    output_LFG, LFG_cost = construct_LFG(G_new, v_bw, v_cpu, index)
+    print(output_LFG)
+
+    src = flows[index][0]
+    dst = flows[index][len(flows[index])-1]
+    while k <= K:
+        output = bfs_shortest_path(output_LFG, src, dst)
+        print('phi')
+        print(output)
+        k = k + 1
 
 
 
@@ -252,7 +260,7 @@ def main():
     generate_Ccpu()
     initialize_rbw()
     initialize_rcpu()
-    K = 5
+    K = 1
 
     for i in range(len(flows)):
         RA_RA(i, flows[i], K)
