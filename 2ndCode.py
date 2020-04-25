@@ -17,6 +17,8 @@ G = {
     10: [1, 9]
 }
 
+
+
 M = {
     "a" : [10, 2, 8],
     "b" : [10, 2, 7],
@@ -31,8 +33,8 @@ threshold_bw = 7
 threshold_cpu = 7
 
 flows = [
-    [1, "a", "b", "c", "d", 5],
     [1, "a", "b", 3],
+    [1, "a", "b", "c", "d", 5],
     [1, "a", 2],
     [2, "b", 6],
     [1, "b", "a", 5],
@@ -58,7 +60,7 @@ def generate_Cbw():
 
 def generate_Ccpu():
     for node in G:
-        C_cpu[node] = randint(20, 50)
+        C_cpu[node] = randint(15, 50)
 
 def generate_fbw():
     for i in flows:
@@ -94,7 +96,38 @@ def get_max_bw():
             max_edge = edge
     return [max_edge, max_bw]
 
-def dijkstra(src,dest,v_bw,visited=[],distances={},predecessors={}):
+def bfs_shortest_path(graph, start, goal):
+    # keep track of explored nodes
+    explored = []
+    # keep track of all the paths to be checked
+    queue = [[start]]
+
+    # return path if start is goal
+    if start == goal:
+        return "That was easy! Start = goal"
+
+    # keeps looping until all possible paths have been checked
+    while queue:
+        # pop the first path from the queue
+        path = queue.pop(0)
+        # get the last node from the path
+        node = path[-1]
+        if node not in explored:
+            neighbours = graph[node]
+            # go through all neighbour nodes, construct a new path and
+            # push it into the queue
+            for neighbour in neighbours:
+                new_path = list(path)
+                new_path.append(neighbour)
+                queue.append(new_path)
+                # return path if neighbour is goal
+                if neighbour == goal:
+                    return new_path
+
+            # mark node as explored
+            explored.append(node)
+
+def dijkstra(graph, src,dest,v_bw,visited=[],distances={},predecessors={}):
     #print(src, dest)
     if src == dest:
         path = []
@@ -108,7 +141,7 @@ def dijkstra(src,dest,v_bw,visited=[],distances={},predecessors={}):
         if not visited:
             distances[src] = 0
 
-        for neighbour in G[src]:
+        for neighbour in graph[src]:
             if neighbour not in visited:
                 key = str(src) + '-' + str(neighbour)
                 new_distance = distances[src] + v_bw[key]
@@ -118,28 +151,34 @@ def dijkstra(src,dest,v_bw,visited=[],distances={},predecessors={}):
 
         visited.append(src)
         unvisited={}
-        for k in G:
+        for k in graph:
             if k not in visited:
                 unvisited[k] = distances.get(k, float('inf'))
         x = sorted(unvisited, key=unvisited.get)
         if unvisited:
-            return dijkstra(x[0], dest, v_bw, visited, distances, predecessors)
+            return dijkstra(graph, x[0], dest, v_bw, visited, distances, predecessors)
 
 
-def construct_LFG(v_bw, v_cpu, index):
+def construct_LFG(graph, v_bw, v_cpu, index):
     G_cap = {}
+    #print('eta')
     eta = [[flows[index][0]]]
     for j in range(1, len(flows[index])-1):
         m_type = flows[index][j]
         eta.append(M[m_type])
     eta.append([flows[index][len(flows[index])-1]])
+    #print(eta)
 
     v_cap_cost = {}
 
     for j in range(0, len(eta)-1):
         for u_cap in eta[j]:
             for v_cap in eta[j+1]:
-                shortest_path = dijkstra(u_cap, v_cap, v_bw)
+                if u_cap in graph and v_cap in graph and u_cap != v_cap:
+                    shortest_path = dijkstra(graph, u_cap, v_cap, v_bw)
+                    #shortest_path = bfs_shortest_path(graph, u_cap, v_cap)
+                elif u_cap in graph and v_cap in graph and u_cap == v_cap:
+                    shortest_path = [u_cap, v_cap]
                 #print('src,dest', u_cap, ' ', v_cap)
                 #print('s', shortest_path)
 
@@ -147,8 +186,9 @@ def construct_LFG(v_bw, v_cpu, index):
                     v_sum_bw = 0
                     v_sum_cpu = 0
                     for i in range(len(shortest_path)-1):
-                        key = str(shortest_path[i]) + '-' + str(shortest_path[i+1])
-                        v_sum_bw = v_sum_bw + v_bw[key]
+                        if shortest_path[i] != shortest_path[i+1]:
+                            key = str(shortest_path[i]) + '-' + str(shortest_path[i+1])
+                            v_sum_bw = v_sum_bw + v_bw[key]
                         v_sum_cpu = v_sum_cpu + float((v_cpu[shortest_path[i]] + v_cpu[shortest_path[i+1]])/2)
 
                     key = str(u_cap) + '-' + str(v_cap)
@@ -178,9 +218,9 @@ def RA_RA(index, flow, K):
                 key = str(node) + '-' + str(edge)
                 if C_cpu[edge] >= required_cpu and C_bw[key] >= required_bw:
                     if node not in G_new:
-                        G_new = [edge]
+                        G_new[node] = [edge]
                     else:
-                        G_new.append(edge)
+                        G_new[node].append(edge)
 
     max_cpu = get_max_cpu()
     max_bw = get_max_bw()
@@ -189,6 +229,7 @@ def RA_RA(index, flow, K):
 
     for edge in C_bw:
         if fbw[index] > threshold_bw:
+            #print(r_bw[edge], C_bw[edge], fbw[index])
             v_bw[edge] = max_bw[1]/(r_bw[edge]*C_bw[edge] - fbw[index])
         else:
             v_bw[edge] = 0
@@ -199,7 +240,7 @@ def RA_RA(index, flow, K):
         else:
             v_cpu[node] = 0
 
-    LFG, LFG_cost = construct_LFG(v_bw, v_cpu, index)
+    LFG, LFG_cost = construct_LFG(G_new, v_bw, v_cpu, index)
     print(LFG)
 
 
@@ -212,6 +253,7 @@ def main():
     initialize_rbw()
     initialize_rcpu()
     K = 5
+
     for i in range(len(flows)):
         RA_RA(i, flows[i], K)
 
