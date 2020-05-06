@@ -127,7 +127,9 @@ def generate_qrm(rls):
             mbox_in_r = {}
             for k in range(0, len(rls[i][j])):
                 if rls[i][j][k] in top_mbox:
-                    mbox_in_r[rls[i][j][k]] = randint(1, 5)
+                    if(rls[i][j][k] not in mbox_in_r):
+                        mbox_in_r[rls[i][j][k]] = 0
+                    mbox_in_r[rls[i][j][k]] += randint(1, 5)
             qrm.append(mbox_in_r)
     return qrm
 
