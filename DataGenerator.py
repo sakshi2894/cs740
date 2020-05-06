@@ -1,7 +1,6 @@
 from random import seed
 from random import randint
-from Nework import nw_graph, mbox_types, top_mbox, flows
-
+from Nework import flows, mbox_types, nw_graph, top_mbox
 
 # Generate Rls
 def generate_rls_flow(ind, rl, node_index, arr):
@@ -72,9 +71,10 @@ def generate_edges(src, dest):
 # 1. Different weights for different directions.
 # 2. Gre will be an array of dictionaries wrt rls not differentiating
 #    wrt flows (assuming fl will take care)
-def generate_gre(rls):
+def generate_gre(rls, fl_e):
     gre = []
     for i in range(0, len(rls)):
+        energy = fl_e[i]
         for j in range(0, len(rls[i])):
             edges = []
             for k in range(0, len(rls[i][j]) - 1):
@@ -91,7 +91,7 @@ def generate_gre(rls):
             edge_weights = {}
             for l in range(0, len(edges) - 1):
                 edge = str(edges[l]) + "-" + str(edges[l + 1])
-                edge_weights[edge] = randint(1, 5)
+                edge_weights[edge] = energy
 
             gre.append(edge_weights)
 
@@ -102,15 +102,33 @@ def generate_ce():
     ce = {}
     for key in nw_graph:
         for val in nw_graph[key]:
-            ce[str(key) + "-" + str(val)] = randint(20, 50)
+            strkey = str(val) + "-" + str(key)
+            if strkey in ce:
+                ce[str(key) + "-" + str(val)] = ce[str(val) + "-" + str(key)]
+            else:
+                ce[str(key) + "-" + str(val)] = randint(20, 50)
     return ce
 
 
 def generate_fl():
     fl = []
     for i in flows:
-        fl.append(randint(1, 5))
+        fl.append(1)
     return fl
+
+
+def generate_fl_edges():
+    fl_e = []
+    for i in flows:
+        fl_e.append(randint(1, 5))
+    return fl_e
+
+
+def generate_fl_pm():
+    fl_pm = []
+    for i in flows:
+        fl_pm.append(randint(1, 5))
+    return fl_pm
 
 
 def generate_pm():
@@ -120,16 +138,17 @@ def generate_pm():
     return pm
 
 
-def generate_qrm(rls):
+def generate_qrm(rls, fl_pm):
     qrm = []
     for i in range(0, len(rls)):
+        energy = fl_pm[i]
         for j in range(0, len(rls[i])):
             mbox_in_r = {}
             for k in range(0, len(rls[i][j])):
                 if rls[i][j][k] in top_mbox:
-                    if(rls[i][j][k] not in mbox_in_r):
+                    if (rls[i][j][k] not in mbox_in_r):
                         mbox_in_r[rls[i][j][k]] = 0
-                    mbox_in_r[rls[i][j][k]] += randint(1, 5)
+                    mbox_in_r[rls[i][j][k]] += energy
             qrm.append(mbox_in_r)
     return qrm
 
@@ -139,7 +158,12 @@ def generate_data():
     rls = generate_rls()
     ce = generate_ce()
     fl = generate_fl()
+    fl_e = generate_fl_edges()
+    fl_pm = generate_fl_pm()
     pm = generate_pm()
-    gre = generate_gre(rls)
-    qrm = generate_qrm(rls)
+    gre = generate_gre(rls, fl_e)
+    qrm = generate_qrm(rls, fl_pm)
     return rls, gre, ce, fl, pm, qrm
+
+
+

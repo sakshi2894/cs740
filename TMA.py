@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import linprog
 from DataGenerator import generate_data
 
+
 def simplex(rls, gre, ce, fl, pm, qrm):
     c = []
     num_rls = 0
@@ -71,7 +72,7 @@ def simplex(rls, gre, ce, fl, pm, qrm):
 
 if __name__ == '__main__':
     rls, gre, ce, fl, pm, qrm = generate_data()
-    print(rls)
+    print("rls: " + str(rls))
     print(gre)
     print(ce)
     print(fl)
