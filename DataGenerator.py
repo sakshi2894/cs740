@@ -1,6 +1,6 @@
 from random import seed
 from random import randint
-from Nework import flows, mbox_types, nw_graph, top_mbox
+from Network import flows, mbox_types, nw_graph, top_mbox, ce, pm
 
 # Generate Rls
 def generate_rls_flow(ind, rl, node_index, arr):
@@ -90,8 +90,10 @@ def generate_gre(rls, fl_e):
             # print(edges)
             edge_weights = {}
             for l in range(0, len(edges) - 1):
-                edge = str(edges[l]) + "-" + str(edges[l + 1])
-                edge_weights[edge] = energy
+                edge = get_key(edges[l], edges[l + 1])
+                if edge not in edge_weights:
+                    edge_weights[edge] = 0
+                edge_weights[edge] = edge_weights[edge] + energy
 
             gre.append(edge_weights)
 
@@ -120,14 +122,14 @@ def generate_fl():
 def generate_fl_edges():
     fl_e = []
     for i in flows:
-        fl_e.append(randint(1, 5))
+        fl_e.append(randint(1,2))
     return fl_e
 
 
 def generate_fl_pm():
     fl_pm = []
     for i in flows:
-        fl_pm.append(randint(1, 5))
+        fl_pm.append(randint(1, 4))
     return fl_pm
 
 
@@ -152,18 +154,21 @@ def generate_qrm(rls, fl_pm):
             qrm.append(mbox_in_r)
     return qrm
 
+def get_key(a, b):
+    min_number = min(a,b)
+    max_number = max(a,b)
+    return str(min_number)+'-'+str(max_number)
 
 def generate_data():
     seed(1)
     rls = generate_rls()
-    ce = generate_ce()
     fl = generate_fl()
     fl_e = generate_fl_edges()
     fl_pm = generate_fl_pm()
-    pm = generate_pm()
+    #pm = generate_pm()
     gre = generate_gre(rls, fl_e)
     qrm = generate_qrm(rls, fl_pm)
-    return rls, gre, ce, fl, pm, qrm
+    return rls, gre, ce, fl, pm, qrm, fl_e
 
 
 

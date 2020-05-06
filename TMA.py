@@ -3,7 +3,7 @@ from scipy.optimize import linprog
 from DataGenerator import generate_data
 
 
-def simplex(rls, gre, ce, fl, pm, qrm):
+def simplex(rls, gre, ce, fl, pm, qrm, fl_e):
     c = []
     num_rls = 0
     rls_arr = []
@@ -13,7 +13,7 @@ def simplex(rls, gre, ce, fl, pm, qrm):
 
     # Optimization function
     for i in range(len(rls)):
-        f = fl[i]
+        f = fl_e[i]
         rl_count = 0
         for j in rls[i]:
             c.append(f * -1)
@@ -66,16 +66,18 @@ def simplex(rls, gre, ce, fl, pm, qrm):
             A.append(arr)
             b.append(0)
 
-    res = linprog(constants, A_ub=np.array(A), b_ub=np.array(b), bounds=(0, None), method='simplex')
+    res = linprog(constants, A_ub=np.array(A), b_ub=np.array(b), bounds=(0, None), method='interior-point')
     print('Optimal value:', res.fun, '\nX:', res.x)
 
 
 if __name__ == '__main__':
-    rls, gre, ce, fl, pm, qrm = generate_data()
+    rls, gre, ce, fl, pm, qrm, fl_e = generate_data()
+
     print("rls: " + str(rls))
     print(gre)
     print(ce)
     print(fl)
     print(pm)
     print(qrm)
-    simplex(rls, gre, ce, fl, pm, qrm)
+    print("fl_e" + str(fl_e))
+    simplex(rls, gre, ce, fl, pm, qrm, fl_e)
