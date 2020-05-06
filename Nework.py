@@ -13,7 +13,7 @@ nw_graph = {
 
 mbox_types = {
     "p": [7, 8],
-    "f": [9]
+    "f": [7, 9]
 }
 
 top_mbox = {

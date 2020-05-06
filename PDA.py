@@ -1,5 +1,5 @@
 from DataGenerator import generate_data
-from Nework import nw_graph
+from Nework import nw_graph, flows
 
 
 def pda(rls, gre, ce, fl, pm, qrm):

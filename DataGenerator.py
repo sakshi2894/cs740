@@ -37,7 +37,7 @@ def bfs_shortest_path(graph, start, goal):
 
     # return path if start is goal
     if start == goal:
-        return "That was easy! Start = goal"
+        return None
 
     # keeps looping until all possible paths have been checked
     while queue:
@@ -79,6 +79,8 @@ def generate_gre(rls):
             edges = []
             for k in range(0, len(rls[i][j]) - 1):
                 gen_edges = generate_edges(rls[i][j][k], rls[i][j][k + 1])
+                if gen_edges == None:
+                    continue
 
                 if k != 0:
                     edges = edges + gen_edges[1:]
