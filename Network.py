@@ -137,7 +137,7 @@ def fat_tree_generator():
     ## Joining Middle Boxes
     for i in range(server_stop_index + 1, mbox_stop_index + 1):
         nw_graph[i] = []
-        connected_host = randint(1, server_stop_index)
+        connected_host = randint(1, edge_stop_index)
         nw_graph[i].append(connected_host)
         nw_graph[connected_host].append(i)
         top_mbox.append(i)
@@ -181,8 +181,8 @@ def fat_tree_generator():
 
 
 first_second_layer_bw = 100
-second_third_layer_bw = 20
-third_fourth_layer_bw = 20
-m_boxes_bw = 50
+second_third_layer_bw = 50
+third_fourth_layer_bw = 50
+m_boxes_bw = 100
 nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 

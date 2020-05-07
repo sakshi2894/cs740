@@ -425,7 +425,7 @@ if __name__ == '__main__':
 
     initialize_rbw()
     initialize_rcpu()
-    K = 900
+    K = 1
     throughput = 0
 
     threshold_bw = 5
