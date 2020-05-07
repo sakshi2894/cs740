@@ -122,6 +122,7 @@ def fat_tree_generator():
                 nw_graph[j].append(i)
                 ce[get_key(i, j)] = second_third_layer_bw
 
+
     ### Joining third and fourth layers
     curr_server = edge_stop_index
     for i in range(aggregation_stop_index + 1, edge_stop_index + 1):
@@ -130,6 +131,7 @@ def fat_tree_generator():
             nw_graph[i].append(curr_server)
             nw_graph[curr_server].append(i)
             ce[get_key(i, curr_server)] = third_fourth_layer_bw
+
 
 
     ## Joining Middle Boxes
@@ -141,6 +143,7 @@ def fat_tree_generator():
         top_mbox.append(i)
         pm[i] = 6000
         ce[get_key(i, connected_host)] = m_boxes_bw
+
 
 
     # Generating middle boxes

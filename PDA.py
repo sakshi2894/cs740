@@ -2,25 +2,26 @@ from DataGenerator import generate_data
 from Network import nw_graph, flows
 
 
-def pda(rls, gre, ce, fl, pm, qrm):
+def pda(rls, gre, ce, fl, pm, qrm, fl_e):
+
+
     #Compute B*
     max_gre = -1
     for i in range(len(gre)):
         max_gre = max(max_gre, max(gre[i].values()))
-    print (max_gre)
+    print(max_gre)
 
     max_qrm = -1
     for i in range(len(qrm)):
         max_qrm = max(max_qrm, max(qrm[i].values()))
-    print (max_qrm)
+    print(max_qrm)
 
     b_star = max(max_qrm, max_gre)
     epsilon = 0.001
-
     chi = b_star/epsilon
 
-    # Initialize all dual values
 
+    # Initialize all dual values
     lamb = {}
     theta = {}
     pie = []
@@ -35,18 +36,19 @@ def pda(rls, gre, ce, fl, pm, qrm):
     for flow in fl:
         pie.append(0)
 
+
     # Algorithm
     cum_rls = 0
-    for i in range(len(fl)):
+    throughput = 0
+    for i in range(0, len(fl)):
 
         # Compute r*
-
         r_star = rls[i][0]
         k_r = float("inf")
         ind = 0
         rl = 0
 
-        for j in range(cum_rls, cum_rls+len(rls[i])):
+        for j in range(cum_rls, cum_rls + len(rls[i])):
 
             sum_gre = 0
             sum_qrm = 0
@@ -72,29 +74,25 @@ def pda(rls, gre, ce, fl, pm, qrm):
         else:
             print("Route flow " + str(i) + " through " + str(r_star))
             pie[i] = fl[i] - (fl[i] * k_r)
+            throughput = throughput + fl_e[i]
 
-            #print("lambda before " + str(lamb))
-            #print("theta before " + str(theta))
             for edge in ce:
                 if edge in gre[ind]:
-                    lamb[edge] = lamb[edge] + lamb[edge]*fl[i]*gre[ind][edge]/ce[edge] + fl[i]*gre[ind][edge]/(n*chi*ce[edge])
-
+                    lamb[edge] = lamb[edge] + lamb[edge]*(fl[i]*gre[ind][edge]/ce[edge]) + (fl[i]*gre[ind][edge]/(n*chi*ce[edge]))
 
             for mbox in pm:
                 if mbox in qrm[ind]:
-                    theta[mbox] = theta[mbox] + theta[mbox] * fl[i] * qrm[ind][mbox] / pm[mbox] + fl[i] * qrm[ind][
-                        mbox] / (n * chi * pm[mbox])
+                    theta[mbox] = theta[mbox] + theta[mbox] * (fl[i] * qrm[ind][mbox] / pm[mbox]) + (fl[i] * qrm[ind][
+                        mbox] / (n * chi * pm[mbox]))
 
-            #print("lambda after " + str(lamb))
-            #print("theta after " + str(theta))
-
+    print("Throughput: " + str(throughput))
 
 if __name__ == '__main__':
-    rls, gre, ce, fl, pm, qrm = generate_data()
+    rls, gre, ce, fl, pm, qrm, fl_e = generate_data()
     print(rls)
     print(gre)
     print(ce)
     print(fl)
     print(pm)
     print(qrm)
-    pda(rls, gre, ce, fl, pm, qrm)
+    pda(rls, gre, ce, fl, pm, qrm, fl_e)
