@@ -73,14 +73,17 @@ def simplex(rls, gre, ce, fl, pm, qrm, fl_e):
 if __name__ == '__main__':
     rls, gre, ce, fl, pm, qrm, fl_e,fl_pm = generate_data()
 
-    print("rls: " + str(rls))
-    print(gre)
-    print(ce)
-    print(fl)
-    print(pm)
-    print(qrm)
-    print("fl_e" + str(fl_e))
-    for i in range(0,len(fl_e)):
-        sum  =sum + fl_e[i]
-    print("Maximum Throughtput: "+ str(sum))
+    #print("rls: " + str(rls))
+    #print(gre)
+    #print(ce)
+    #print(fl)
+    #print(pm)
+    #print(qrm)
+    #print("fl_e" + str(fl_e))
+
     simplex(rls, gre, ce, fl, pm, qrm, fl_e)
+
+    sum = 0
+    for i in range(0, len(fl_e)):
+        sum  = sum + fl_e[i]
+    print("Maximum Throughput: " + str(sum))
