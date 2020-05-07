@@ -17,7 +17,7 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
     print(max_qrm)
 
     b_star = max(max_qrm, max_gre)
-    epsilon = 0.5
+    epsilon = 0.75
     chi = b_star/epsilon
 
 
@@ -95,9 +95,10 @@ if __name__ == '__main__':
     print(fl)
     print(pm)
     print(qrm)
-    sum = 0
-    for i in range(0,len(fl_e)):
-        sum  =sum + fl_e[i]
-    print("Maximum Throughtput: "+ str(sum))
+
 
     pda(rls, gre, ce, fl, pm, qrm, fl_e)
+    sum = 0
+    for i in range(0, len(fl_e)):
+        sum = sum + fl_e[i]
+    print("Maximum Throughtput: " + str(sum))

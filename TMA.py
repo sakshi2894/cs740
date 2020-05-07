@@ -81,6 +81,6 @@ if __name__ == '__main__':
     print(qrm)
     print("fl_e" + str(fl_e))
     for i in range(0,len(fl_e)):
-        sum  =sum + fl_e[i]
+        sum  = sum + fl_e[i]
     print("Maximum Throughtput: "+ str(sum))
     simplex(rls, gre, ce, fl, pm, qrm, fl_e)
