@@ -3,56 +3,55 @@ from random import randint
 import math
 import heapq
 import numpy
+from DataGenerator import generate_data,get_network_values
 
 seed(1)
 
-G = {
-    1 : [2, 10],
-    2 : [3, 8, 1],
-    3 : [2, 4, 6],
-    4 : [3, 5],
-    5 : [4, 6, 7],
-    6 : [3, 5, 7, 8],
-    7 : [5, 6, 9],
-    8 : [2, 6, 9],
-    9 : [7, 8, 10],
-    10: [1, 9]
-}
+# G = {
+#     1 : [2, 10],
+#     2 : [3, 8, 1],
+#     3 : [2, 4, 6],
+#     4 : [3, 5],
+#     5 : [4, 6, 7],
+#     6 : [3, 5, 7, 8],
+#     7 : [5, 6, 9],
+#     8 : [2, 6, 9],
+#     9 : [7, 8, 10],
+#     10: [1, 9]
+# }
 
 
 
-M = {
-    "a" : [10, 2, 8],
-    "b" : [10, 2, 7],
-    "c" : [8, 3, 6, 7],
-    "d" : [8, 6, 7]
-}
+# M = {
+#     "a" : [10, 2, 8],
+#     "b" : [10, 2, 7],
+#     "c" : [8, 3, 6, 7],
+#     "d" : [8, 6, 7]
+# }
 
-V_fn = [2, 3, 6, 7, 8, 9, 10]
-V_sw = [1, 4, 5]
+# V_fn = [2, 3, 6, 7, 8, 9, 10]
+# V_sw = [1, 4, 5]
+#
+#
+#
+# flows = [
+#     [1, "a", "b", 3],
+#     [1, "a", "b", "c", "d", 5],
+#     [1, "a", 2],
+#     [2, "b", 6],
+#     [1, "b", "a", 5],
+#     [4, "b", 5],
+#     [1, "b" , "c", "d", 6],
+#     [3, "d", "a", 7],
+#     [7, "c" ,"d", 10],
+#     [4, "b", "d", 8]
+# ]
 
-threshold_bw = 1
-threshold_cpu = 1
 
-flows = [
-    [1, "a", "b", 3],
-    [1, "a", "b", "c", "d", 5],
-    [1, "a", 2],
-    [2, "b", 6],
-    [1, "b", "a", 5],
-    [4, "b", 5],
-    [1, "b" , "c", "d", 6],
-    [3, "d", "a", 7],
-    [7, "c" ,"d", 10],
-    [4, "b", "d", 8]
-]
-
-fbw = []
-fcpu = []
-C_bw = {}
-C_cpu = {}
-r_bw = {}
-r_cpu = {}
+def get_key(a, b):
+    min_number = min(a,b)
+    max_number = max(a,b)
+    return str(min_number)+'-'+str(max_number)
 
 
 ## Is the graph bi-directional?
@@ -215,11 +214,14 @@ def construct_LFG(graph, v_bw, v_cpu, index):
                     v_sum_cpu = 0
                     for i in range(len(shortest_path)-1):
                         if shortest_path[i] != shortest_path[i+1]:
-                            key = str(shortest_path[i]) + '-' + str(shortest_path[i+1])
+                            key = get_key(shortest_path[i],shortest_path[i+1])
                             v_sum_bw = v_sum_bw + v_bw[key]
 
-                    v_sum_cpu =  float((v_cpu[shortest_path[i]] + v_cpu[shortest_path[i+1]])/2)
-                    node1 =  str(u_cap)+"_"+str(j)
+                    if(u_cap in V_fn):
+                        v_sum_cpu = v_cpu[u_cap]
+                    if(v_cap in V_fn):
+                        v_sum_cpu = v_sum_cpu + v_cpu[v_cap]
+                    node1 = str(u_cap)+"_"+str(j)
                     node2 = str(v_cap)+"_"+str(j+1)
                     key = node1 + '-' + node2
 
@@ -247,9 +249,9 @@ def RA_RA(index, flow, K):
     required_cpu = fcpu[index]
     G_new = {}
     for node in G:
-        if C_cpu[node] >= required_cpu:
+        if node in V_sw or C_cpu[node] >= required_cpu:
             for edge in G[node]:
-                key = str(node) + '-' + str(edge)
+                key = get_key(node,edge);
                 if C_bw[key]*r_bw[key] >= required_bw:
                     if node not in G_new:
                         G_new[node] = [edge]
@@ -301,16 +303,23 @@ def RA_RA(index, flow, K):
         remembering_paths = {}
         if(output_bars[k] is not None):
             routing_path = []
+            no_path_found = False
             for i in range(0,len(output_bars[k])-1):
                 start = output_bars[k][i].split("_")[0]
                 end = output_bars[k][i+1].split("_")[0]
                 path = bfs_shortest_path(G_new,int(start),int(end))
                 key = str(start)+"-"+str(end)
                 remembering_paths[key] = path
+                if path is None:
+                    no_path_found = True
+                    break;
                 if not routing_path:
                    routing_path.extend(path)
                 else:
                    routing_path.extend(path[1:])
+
+            if(no_path_found):
+                continue;
 
             constraints=True
             ## Check Equation 9:
@@ -318,11 +327,14 @@ def RA_RA(index, flow, K):
                 start_edge_node = edge.split("-")[0]
                 end_edge_node = edge.split("-")[1]
                 sum = 0
-                for i in range(0,len(output_bars[k])):
+                for i in range(0, len(output_bars[k]) - 1):
+                    start = output_bars[k][i].split("_")[0]
+                    end = output_bars[k][i + 1].split("_")[0]
+                    key = str(start) + "-" + str(end)
                     possible_path = remembering_paths[key]
-                    yes = check_if_in_path(possible_path,start_edge_node,end_edge_node)
-                    if(yes):
-                        sum = sum+fbw(index)
+                    count = check_if_in_path(possible_path,int(start_edge_node),int(end_edge_node))
+                    sum = sum+fbw[index]*count
+
                 if(sum>r_bw[edge]*C_bw[edge]):
                     constraints=False
                     break;
@@ -360,9 +372,11 @@ def RA_RA(index, flow, K):
                 end = routing_path[i+1]
                 if(start==end):
                     continue
-                key = str(start)+"-"+str(end)
+                key = get_key(start,end)
                 remaing = C_bw[key]*r_bw[key]-fbw[index]
                 r_bw[key] = remaing/C_bw[key]
+                if(r_bw[key]<0):
+                    print("Alert")
 
             for i in range(0,len(routing_path)):
                 node = routing_path[i]
@@ -383,22 +397,40 @@ def RA_RA(index, flow, K):
 
 
 def check_if_in_path(possible_path,start_edge,end_edge):
+    count = 0
     for i in range(0,len(possible_path)-1):
-        if(possible_path[i]==start_edge and possible_path[i+1]==end_edge):
-            return True
-    return False
+        if( (possible_path[i]==start_edge and possible_path[i+1]==end_edge) or (possible_path[i]==end_edge and possible_path[i+1]==start_edge) ):
+            count = count+1
+    return count
 
 
 
-def main():
-    generate_fbw()
-    generate_fcpu()
-    generate_Cbw()
-    generate_Ccpu()
+if __name__ == '__main__':
+    flows, mbox_types, nw_graph,top_mbox = get_network_values()
+    rls, gre, ce, fl, pm, qrm, fl_e,fl_pm = generate_data()
+    r_bw = {}
+    r_cpu = {}
+    G = nw_graph
+    M = mbox_types
+    V_fn = top_mbox
+    V_sw = [x for x in list(nw_graph) if x not in V_fn]
+    fbw = fl_e
+    #generate_fbw()
+    fcpu = fl_pm
+    #generate_fcpu()
+    C_bw= ce
+    #generate_Cbw()
+    C_cpu = pm
+    #generate_Ccpu()
+
     initialize_rbw()
     initialize_rcpu()
-    K = 30
+    K = 900
     throughput = 0
+
+    threshold_bw = 5
+    threshold_cpu = 5
+
     for i in range(len(flows)):
         print("For Index i: "+str(i+1))
         result,passed = RA_RA(i, flows[i], K)
@@ -409,9 +441,9 @@ def main():
         print(r_cpu)
         print("\n\n")
 
+    sum = 0
+    for i in range(len(fl_e)):
+        sum = sum +fl_e[i]
+    print("Total_throughtput Possible: "+ str(sum))
     print("Total_throughput: "+ str(throughput))
 
-
-
-if __name__ == '__main__':
-    main()

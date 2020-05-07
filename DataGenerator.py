@@ -1,5 +1,6 @@
 from random import seed
 from random import randint
+from  random import uniform
 from Network import flows, mbox_types, nw_graph, top_mbox, ce, pm
 
 # Generate Rls
@@ -122,7 +123,7 @@ def generate_fl():
 def generate_fl_edges():
     fl_e = []
     for i in flows:
-        fl_e.append(randint(1,2))
+        fl_e.append(uniform(1,5))
     return fl_e
 
 
@@ -164,11 +165,14 @@ def generate_data():
     rls = generate_rls()
     fl = generate_fl()
     fl_e = generate_fl_edges()
+    print("FLow Cost: "+str(fl_e))
     fl_pm = generate_fl_pm()
     #pm = generate_pm()
     gre = generate_gre(rls, fl_e)
     qrm = generate_qrm(rls, fl_pm)
-    return rls, gre, ce, fl, pm, qrm, fl_e
+    return rls, gre, ce, fl, pm, qrm, fl_e,fl_pm
 
 
+def get_network_values():
+    return flows, mbox_types, nw_graph,top_mbox
 

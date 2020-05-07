@@ -104,7 +104,7 @@ def fat_tree_generator():
             key = int(aggregation_start + (k / 2) * j)
             nw_graph[i].append(key)
             nw_graph[key].append(i)
-            ce[get_key(i, key)] = 200
+            ce[get_key(i, key)] = first_second_layer_bw
 
     # Connecting Aggregation and Edge switches
     agg_start = core_switches + 1
@@ -120,7 +120,7 @@ def fat_tree_generator():
             for j in range(curr_edge_start, curr_edge_start + pod_size):
                 nw_graph[i].append(j)
                 nw_graph[j].append(i)
-                ce[get_key(i, j)] = 200
+                ce[get_key(i, j)] = second_third_layer_bw
 
     ### Joining third and fourth layers
     curr_server = edge_stop_index
@@ -129,16 +129,18 @@ def fat_tree_generator():
             curr_server = curr_server + 1
             nw_graph[i].append(curr_server)
             nw_graph[curr_server].append(i)
-            ce[get_key(i, curr_server)] = 200
+            ce[get_key(i, curr_server)] = third_fourth_layer_bw
 
+
+    ## Joining Middle Boxes
     for i in range(server_stop_index + 1, mbox_stop_index + 1):
         nw_graph[i] = []
-        connected_host = randint(edge_stop_index + 1, server_stop_index)
+        connected_host = randint(1, server_stop_index)
         nw_graph[i].append(connected_host)
         nw_graph[connected_host].append(i)
         top_mbox.append(i)
-        pm[i] = 600
-        ce[get_key(i, connected_host)] = 200
+        pm[i] = 6000
+        ce[get_key(i, connected_host)] = m_boxes_bw
 
 
     # Generating middle boxes
@@ -170,8 +172,14 @@ def fat_tree_generator():
     print(top_mbox)
 
     print("\nGenerated fat tree\n")
+    print("Flows: "+str(flows))
 
     return nw_graph, mbox_types, top_mbox, flows, ce, pm
 
+
+first_second_layer_bw = 100
+second_third_layer_bw = 20
+third_fourth_layer_bw = 20
+m_boxes_bw = 50
 nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 
