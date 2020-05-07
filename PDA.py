@@ -68,11 +68,11 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
         print("k_r: " + str(k_r))
 
         if k_r >= 1:
-            print("PDA rejected flow " + str(flows[i]))
+            #print("PDA rejected flow " + str(flows[i]))
             pie[i] = 0
 
         else:
-            print("Route flow " + str(i) + " through " + str(r_star))
+            #print("Route flow " + str(i) + " through " + str(r_star))
             pie[i] = fl[i] - (fl[i] * k_r)
             throughput = throughput + fl_e[i]
 
@@ -89,12 +89,12 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
 
 if __name__ == '__main__':
     rls, gre, ce, fl, pm, qrm, fl_e, fl_pm = generate_data()
-    print(rls)
-    print(gre)
-    print(ce)
-    print(fl)
-    print(pm)
-    print(qrm)
+    # print(rls)
+    # print(gre)
+    # print(ce)
+    # print(fl)
+    # print(pm)
+    # print(qrm)
 
 
     pda(rls, gre, ce, fl, pm, qrm, fl_e)
