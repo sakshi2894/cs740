@@ -120,7 +120,7 @@ def fat_tree_generator():
             for j in range(curr_edge_start, curr_edge_start + pod_size):
                 nw_graph[i].append(j)
                 nw_graph[j].append(i)
-                ce[get_key(i, j)] = 200
+                ce[get_key(i, j)] = 20
 
     ### Joining third and fourth layers
     curr_server = edge_stop_index
@@ -129,7 +129,7 @@ def fat_tree_generator():
             curr_server = curr_server + 1
             nw_graph[i].append(curr_server)
             nw_graph[curr_server].append(i)
-            ce[get_key(i, curr_server)] = 200
+            ce[get_key(i, curr_server)] = 20
 
     for i in range(server_stop_index + 1, mbox_stop_index + 1):
         nw_graph[i] = []
@@ -138,7 +138,7 @@ def fat_tree_generator():
         nw_graph[connected_host].append(i)
         top_mbox.append(i)
         pm[i] = 600
-        ce[get_key(i, connected_host)] = 200
+        ce[get_key(i, connected_host)] = 20
 
 
     # Generating middle boxes
