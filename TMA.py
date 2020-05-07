@@ -73,6 +73,7 @@ def simplex(rls, gre, ce, fl, pm, qrm, fl_e):
 if __name__ == '__main__':
     rls, gre, ce, fl, pm, qrm, fl_e,fl_pm = generate_data()
 
+
     #print("rls: " + str(rls))
     #print(gre)
     #print(ce)

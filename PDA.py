@@ -17,7 +17,7 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
     print(max_qrm)
 
     b_star = max(max_qrm, max_gre)
-    epsilon = 0.5
+    epsilon = 0.75
     chi = b_star/epsilon
 
 
@@ -68,11 +68,11 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
         print("k_r: " + str(k_r))
 
         if k_r >= 1:
-            print("PDA rejected flow " + str(flows[i]))
+            #print("PDA rejected flow " + str(flows[i]))
             pie[i] = 0
 
         else:
-            print("Route flow " + str(i) + " through " + str(r_star))
+            #print("Route flow " + str(i) + " through " + str(r_star))
             pie[i] = fl[i] - (fl[i] * k_r)
             throughput = throughput + fl_e[i]
 
@@ -89,15 +89,16 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
 
 if __name__ == '__main__':
     rls, gre, ce, fl, pm, qrm, fl_e, fl_pm = generate_data()
-    print(rls)
-    print(gre)
-    print(ce)
-    print(fl)
-    print(pm)
-    print(qrm)
-    sum = 0
-    for i in range(0,len(fl_e)):
-        sum  =sum + fl_e[i]
-    print("Maximum Throughtput: "+ str(sum))
+    # print(rls)
+    # print(gre)
+    # print(ce)
+    # print(fl)
+    # print(pm)
+    # print(qrm)
+
 
     pda(rls, gre, ce, fl, pm, qrm, fl_e)
+    sum = 0
+    for i in range(0, len(fl_e)):
+        sum = sum + fl_e[i]
+    print("Maximum Throughtput: " + str(sum))

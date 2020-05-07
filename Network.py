@@ -159,6 +159,7 @@ def fat_tree_generator():
         start_char_Mbox = start_char_Mbox + 1
 
     flows = generate_flows(200, 81, 208, mbox_types)
+
     #print(flows)
 
     # flows = [
