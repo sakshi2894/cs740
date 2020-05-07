@@ -141,7 +141,7 @@ def fat_tree_generator():
         nw_graph[i].append(connected_host)
         nw_graph[connected_host].append(i)
         top_mbox.append(i)
-        pm[i] = 6000
+        pm[i] = 300
         ce[get_key(i, connected_host)] = m_boxes_bw
 
 
@@ -180,9 +180,9 @@ def fat_tree_generator():
     return nw_graph, mbox_types, top_mbox, flows, ce, pm
 
 
-first_second_layer_bw = 100
-second_third_layer_bw = 20
-third_fourth_layer_bw = 20
-m_boxes_bw = 100
+first_second_layer_bw = 200
+second_third_layer_bw = 100
+third_fourth_layer_bw = 100
+m_boxes_bw = 200
 nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 

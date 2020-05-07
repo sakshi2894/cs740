@@ -95,4 +95,9 @@ if __name__ == '__main__':
     print(fl)
     print(pm)
     print(qrm)
+    sum = 0
+    for i in range(0,len(fl_e)):
+        sum  =sum + fl_e[i]
+    print("Maximum Throughtput: "+ str(sum))
+
     pda(rls, gre, ce, fl, pm, qrm, fl_e)

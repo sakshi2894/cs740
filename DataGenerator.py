@@ -130,7 +130,7 @@ def generate_fl_edges():
 def generate_fl_pm():
     fl_pm = []
     for i in flows:
-        fl_pm.append(randint(1, 4))
+        fl_pm.append(uniform(1, 4))
     return fl_pm
 
 
