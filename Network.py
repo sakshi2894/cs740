@@ -181,8 +181,8 @@ def fat_tree_generator():
 
 
 first_second_layer_bw = 100
-second_third_layer_bw = 50
-third_fourth_layer_bw = 50
+second_third_layer_bw = 20
+third_fourth_layer_bw = 20
 m_boxes_bw = 100
 nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 

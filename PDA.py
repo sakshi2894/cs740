@@ -17,7 +17,7 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
     print(max_qrm)
 
     b_star = max(max_qrm, max_gre)
-    epsilon = 0.001
+    epsilon = 0.5
     chi = b_star/epsilon
 
 
@@ -78,17 +78,17 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
 
             for edge in ce:
                 if edge in gre[ind]:
-                    lamb[edge] = lamb[edge] + lamb[edge]*(fl[i]*gre[ind][edge]/ce[edge]) + (fl[i]*gre[ind][edge]/(n*chi*ce[edge]))
+                    lamb[edge] = lamb[edge] + lamb[edge]*float(fl[i]*gre[ind][edge]/ce[edge]) + float(fl[i]*gre[ind][edge]/(chi*ce[edge]))
 
             for mbox in pm:
                 if mbox in qrm[ind]:
-                    theta[mbox] = theta[mbox] + theta[mbox] * (fl[i] * qrm[ind][mbox] / pm[mbox]) + (fl[i] * qrm[ind][
-                        mbox] / (n * chi * pm[mbox]))
+                    theta[mbox] = theta[mbox] + theta[mbox] * float(fl[i] * qrm[ind][mbox] / pm[mbox]) + float(fl[i] * qrm[ind][
+                        mbox] / (chi * pm[mbox]))
 
     print("Throughput: " + str(throughput))
 
 if __name__ == '__main__':
-    rls, gre, ce, fl, pm, qrm, fl_e = generate_data()
+    rls, gre, ce, fl, pm, qrm, fl_e, fl_pm = generate_data()
     print(rls)
     print(gre)
     print(ce)
