@@ -8,7 +8,11 @@ def pda(rls, gre, ce, fl, pm, qrm, fl_e):
     #Compute B*
     max_gre = -1
     for i in range(len(gre)):
-        max_gre = max(max_gre, max(gre[i].values()))
+        # print("maxx")
+        # print(gre[i])
+        # print(max_gre)
+        if gre[i]:
+            max_gre = max(max_gre, max(gre[i].values()))
     print(max_gre)
 
     max_qrm = -1
