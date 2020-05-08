@@ -231,7 +231,7 @@ def coronet_gen():
     for i in range(0,num_mbox):
         node = sorted_graph[i][0]
         top_mbox.append(node)
-        pm[node] = 300
+        pm[node] = 1000
         checking = {}
         for j in range(0,number_of_vf_deployed):
             while True:
@@ -253,7 +253,7 @@ def coronet_gen():
 # m_boxes_bw = 200
 # nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 
-bandwidth_power_coronet = 4000
+bandwidth_power_coronet = 1000
 nw_graph, mbox_types, top_mbox, flows, ce, pm = coronet_gen()
 
 
