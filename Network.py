@@ -1,6 +1,7 @@
 
 from random import seed
 from random import randint
+import pandas as pd
 
 def get_key(a, b):
     min_number = min(a,b)
@@ -181,9 +182,79 @@ def fat_tree_generator():
     return nw_graph, mbox_types, top_mbox, flows, ce, pm
 
 
-first_second_layer_bw = 200
-second_third_layer_bw = 100
-third_fourth_layer_bw = 100
-m_boxes_bw = 200
-nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
+def coronet_gen():
+    cities = {}
+    conus_frame = pd.read_csv('conus.csv', header=None)
+    count = 1
+    for index, row in conus_frame.iterrows():
+        cityname1 = row[0]
+        cityname2 = row[1]
+        if(cityname1 not in cities):
+            cities[cityname1]  = count
+            count = count+1
+        if(cityname2 not in cities):
+            cities[cityname2] = count
+            count = count+1
+
+    nw_graph = {}
+    ce = {}
+    for city in cities:
+        nw_graph[cities[city]] = []
+
+    for index, row in conus_frame.iterrows():
+        cityname1 = row[0]
+        cityname2 = row[1]
+        node1 = cities[cityname1]
+        node2 = cities[cityname2]
+        nw_graph[node1].append(node2)
+        nw_graph[node2].append(node1)
+        key = get_key(node1,node2)
+        ce[key] = bandwidth_power_coronet
+
+
+    num_mbox_types = 20  # With num_box/mbox_types instances of each mbox type
+    mbox_types = {}
+    start_char_Mbox = ord('a')
+
+    for m in range(0, num_mbox_types):
+        mbox_types[chr(start_char_Mbox)] = []
+        start_char_Mbox = start_char_Mbox + 1
+    print(mbox_types)
+    num_mbox = 18
+    number_of_vf_deployed = 8
+    sorted_graph = sorted(nw_graph.items(), key=lambda s: len(s[1]), reverse=True)
+    print(sorted_graph)
+    start_char_Mbox = ord('a')
+
+    top_mbox = []
+    pm = {}
+    for i in range(0,num_mbox):
+        node = sorted_graph[i][0]
+        top_mbox.append(node)
+        pm[node] = 300
+        checking = {}
+        for j in range(0,number_of_vf_deployed):
+            while True:
+                type = randint(0,num_mbox_types-1)
+                if type in checking:
+                    continue
+                mbox_types[chr(start_char_Mbox+type)].append(node)
+                checking[type] = 0
+                break
+    print(mbox_types)
+    flows = generate_flows(101,1,len(nw_graph), mbox_types)
+
+    return nw_graph, mbox_types, top_mbox, flows, ce, pm
+
+
+# first_second_layer_bw = 200
+# second_third_layer_bw = 100
+# third_fourth_layer_bw = 100
+# m_boxes_bw = 200
+# nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
+
+bandwidth_power_coronet = 100
+nw_graph, mbox_types, top_mbox, flows, ce, pm = coronet_gen()
+
+
 
