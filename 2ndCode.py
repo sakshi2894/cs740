@@ -428,8 +428,8 @@ if __name__ == '__main__':
     K = 100
     throughput = 0
 
-    threshold_bw = 5
-    threshold_cpu = 5
+    threshold_bw = 2
+    threshold_cpu = 2
 
     for i in range(len(flows)):
         print("For Index i: "+str(i+1))
