@@ -168,6 +168,8 @@ def generate_data():
     print("FLow Cost: "+str(fl_e))
     fl_pm = generate_fl_pm()
     #pm = generate_pm()
+    print(len(rls[0]))
+    print(rls)
     gre = generate_gre(rls, fl_e)
     qrm = generate_qrm(rls, fl_pm)
     return rls, gre, ce, fl, pm, qrm, fl_e,fl_pm

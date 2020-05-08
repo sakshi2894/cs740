@@ -46,10 +46,10 @@ def get_opp_key(key):
     return new_key
 
 
-def generate_flows(num_flows, node_start, node_end, mbox_types):
+def generate_flows(num_flows, node_start, node_end, mbox_types,how_many_to_keep):
     flows = []
     for i in range(0, num_flows):
-        len_flow = randint(1, 6)
+        len_flow = randint(1, how_many_to_keep)
         flow = []
         flow.append(randint(node_start, node_end))
         for j in range(0, len_flow):
@@ -159,7 +159,7 @@ def fat_tree_generator():
             mbox_types[chr(start_char_Mbox)].append(mbox_curr)
         start_char_Mbox = start_char_Mbox + 1
 
-    flows = generate_flows(200, 81, 208, mbox_types)
+    flows = generate_flows(200, 81, 208, mbox_types,6)
 
     #print(flows)
 
@@ -242,7 +242,7 @@ def coronet_gen():
                 checking[type] = 0
                 break
     print(mbox_types)
-    flows = generate_flows(101,1,len(nw_graph), mbox_types)
+    flows = generate_flows(1000,1,len(nw_graph), mbox_types,3)
 
     return nw_graph, mbox_types, top_mbox, flows, ce, pm
 
@@ -253,7 +253,7 @@ def coronet_gen():
 # m_boxes_bw = 200
 # nw_graph, mbox_types, top_mbox, flows, ce, pm = fat_tree_generator()
 
-bandwidth_power_coronet = 100
+bandwidth_power_coronet = 4000
 nw_graph, mbox_types, top_mbox, flows, ce, pm = coronet_gen()
 
 
