@@ -1,0 +1,100 @@
+\section{Problem Formulation}
+\label{sec:problemdef}
+
+Software-defined networks (SDNs) are one of the emerging architectures in network design that can be programmed, made cost-efficient and are highly effective. As the SDNs are managed centrally using a controller,  many new algorithms have been proposed to improve the performance of networks with network functions. Our goal is to investigate the algorithms of maximizing throughput in SDN-enabled networks with dynamic service function chaining. Two types of algorithms are proposed in ~\cite{ref:paper1}  for two traffic routing scenarios: offline, where flows and their demands are known beforehand(Traffic Merging Algorithm TFA) and online where flows arrive one at a time and the routing decision is based on the current state of the network(Primal-Dual Update Algorithm PDA). In our project, we aim to present a comparative study of the above algorithms with the RA-RA algorithm proposed in ~\cite{ref:paper2}\\
+
+\subsection{Max Throughput Routing and Primal Dual Update Algorithm \cite{ref:paper1}}
+\subsubsection{System Model}
+The network is modeled as a graph G := (V, E), where V is the set of vertices and E is the set of edges. Every edge e $\in$ E is associated with a capacity C(e). Every vertex m $in$ V on which a middlebox is deployed is associated with a processing capacity P(m). The set of middlebox types is represented as M. Every flow l is characterised by a source node s, destination node t and the set of middlebox types(Service Function Chain or SFC) it needs to traverse. This is represented as : \newline
+$$R(l) = {(s, m_1, m_2, t)} : m_1 \in M_1, m_2 \in M_2$$\\
+From R(l), the set of paths between a given source and destination and traversing the required chain of middlebox types, is computed, using the shortest path algorithm(BFS). Multiple instances of each middlebox type can be deployed at different nodes in the network. Each path in the set of admissible paths $r \in  R(l)$, is associated with usage of link e by $G_r(e)$ and usage of processing capacity at a middlebox m by $Q_r(m)$.
+\newline
+
+\subsubsection{Max Throughput Routing Algorithm (MTRA) - Offline}
+Here we assume the set of flows L is given. This information can be collected by SDN switches and is used in applications where bandwidth is allocated based on predefined service-level agreement.
+
+For every admissible path $r \in R(l)$, for a given flow l, we determine a splitting portion $x_{rl}$. This splitting would occur at the IP flow level and not at the packet level as indicated in \cite{ref:paper1}. The splitting portion is determined by solving a linear programming model referred to as the Global-OPT. The objective of Global-OPT is to achieve global routing optimization by determining the best route that a given flow l can be routed through. In determining the best route for a given set of flows, the goal would be to maximize the overall throughput while satisfying the constraints (1), (2), (3) and (4) and shown in Algorithm 1. Constraint (1) represents flow splitting, (2) ensures that the load on a particular edge while routing a flow along r does not exceed the capacity of the, (3) ensures that the middlebox processing power consumption is within its capacity and (4) is the positivity constraint.
+
+\subsubsection{Primal Dual Update Algorithm (PDA) - Online}
+The set of flows L is not given. Flows are served one at a time. Every resource is associated with a "shadow price" as indicated in \cite{ref:paper1}. When there is an incoming flow, shadow price is computed and compared to a present threshold. Based on the comparison, the flow is accepted or rejected. If accepted, the shadow price is updated to reflect the resource consumption of that particular flow. This is shown in Algorithm 2. 
+
+Every admissible path r is associated with a path price,\\
+$$K_r := \sum_{e}G_r(e)\lambda(e) + \sum_{m}Q_r(m)\theta(m)$$\\
+The constant $B^*$ indicates the maximum usage of each resource over all possible paths for the flows:
+
+$$B^* = \max_{l,r}\{\max_{e}G_r(e), \max_{m}Q_r(m)\}$$
+
+This constant controls the cost of the flow. $\epsilon$ can be set to a value in (0,1). It provides a tradeoff between the maximizing the network throughput and satisfying all the flow constraints. It is observed that when $\epsilon = 0$, the online algorithm(PDA) provides the same throughput as the offline case(MTRA). 
+
+\begin{algorithm}
+\SetAlgoLined
+Solve Global-OPT with constraints (1), (2), (3), (4) \\
+to get the routing X that maximizes the throughput \\
+achieved \newline
+Constraints:
+
+\hspace{2mm}(1)\hspace{5mm}$\forall l : $\sum_{r\in R(l)}$ x_{rl} <= 1$
+
+\hspace{2mm}(2)\hspace{5mm}$\forall e : $\sum_{l\in L}$ $\sum_{r\in R(l)}$ x_{rl}f_lG_r(e) <= C(e)$
+
+\hspace{2mm}(3)\hspace{5mm}$\forall m : $\sum_{l\in L}$ $\sum_{r\in R(l)}$ x_{rl}f_lQ_r(m) <= P(m)$
+
+\hspace{2mm}(4)\hspace{5mm}$\forall r,l : x_{rl} >= 0$
+
+To maximize throughput: 
+
+$$T : \sum_{l\in L} \sum_{r\in R(l)} x_{rl}f_l$$
+
+\caption{Max-Throughput-Routing-Algorithm (MTRA)}
+\end{algorithm}
+
+\begin{algorithm}
+
+$\chi \gets \frac{B^*}{\epsilon}$ \newline
+\text{Initialize the dual variables to zero: }\newline
+$\lambda(e) \gets 0 \hspace{2mm}\forall e$ \newline
+$\theta(m) \gets 0 \hspace{2mm} \forall m$ \newline
+$\pi(l) \gets 0 \hspace{2mm} \forall l$ \newline
+
+\textbf{for} each arrival of flow request l \textbf{do} \newline
+\hspace{5mm} $r^* \gets argmin_{r \in R(l)}K_r$ \newline
+\hspace{10mm} \textbf{if} $K_{r^{*} \ge 1 \textbf{then}
+} \ge 1$ \textbf{then} \newline
+\hspace{15mm} Reject the request l and set $\pi(l) \gets 0$ \newline
+\hspace{5mm} \textbf{else} \newline
+\hspace{10mm} Route l through $r^*$ \newline
+\hspace{10mm} $\pi(l) \gets f_l[1-K_{r^*}]$ \newline
+\hspace{10mm} $\forall e $: \hspace{5mm} $\lambda(e) \gets \lambda(e)[1 + \frac{f_lG_{r^*}(e)}{C(e)}] + \frac{f_lG_{r^*}(e)}{\chi C(e)}$ \newline
+\hspace{10mm} $\forall m$ : \hspace{5mm} $\theta(m) \gets \theta(m)[1 + \frac{f_lQ_{r^*}(m)}{P(e)}] + \frac{f_lQ_{r^*}(m)}{\chi P(m)}$
+    
+ \caption{Primal-Dual-Update-Algorithm (PDA)}
+\end{algorithm}
+
+\subsection{Resource Aware Routing Algorithm (RA-RA) \cite{ref:paper2}}
+\subsubsection{System Model}
+The network is represented as a graph G := (V, L), where V is the set of vertices and L is the set of links. M is the set of VNF types. Every node $u \in V$, on which an instance of VNF is deployed is associated with CPU capacity denoted as $C_u^{cpu}$. Every link $uv \in L$ is associated with a bandwidth capacity denoted by $C_{uv}^{bw}$. The $i^{th}$ flow's SFC request consists of a source node $S_i$, destination node $T_i$, the VNF chain that the flow has to traverse $\Omega_i$, bandwidth consumption $F_i^{bw}$ and CPU consumption $F_i^{cpu}$.\\
+$$SFCR_i = \{S_i, T_i, \Omega_i, F_i^{bw}, F_i^{cpu}\}$$
+$$\Omega_i = \{\Omega_i(1), \Omega_i(2), ..., \Omega_i(l)\}$$
+Each j in $\Omega_i(j)$, represents a VNF type. While routing a flow i, $r_{i,u}^{cpu}$ represents the ratio of remaining CPU on node u and $r_{i,uv}^{bw}$ represents the ratio of remaining bandwidth on link uv. We will not be considering the flow table capacity($C_u^{ft}$) or consumption($r_u^{ft}$) in order to keep it consistent with MTRA and PDA.
+
+\subsubsection{RA-RA algorithm}
+The function Construct LFG($\hat{G}$) transforms the network graph into a Logical Function Graph(LFG) as shown in Function 1(Figure \ref{fig:lfg_construct}). LFG is a digraph which consists of source node, destination node and the set of VNF instances that is request by a particular flow. On arrival of a flow request i, we enumerate the set of VNF instances corresponding to a VNF type $\Omega_i(j)$, and list them in the same column. A link in LFG connects a node from previous column to all the nodes in the corresponding next column. This link is obtained by determining the shortest path between the pair of nodes from the original network graph. The cost of the link in LFG is the total relative costs of bandwidth and CPU consumed. The relative costs are inversely proportional to the remaining resources and are calculated as follows:\\
+$$v_{i,\hat{u}\hat{v}} = \sum_{uv \in L} v_{i,uv}^{bw}z_{i,uv}^{\hat{u}\hat{v}} + \frac{v_{i,\pi(\hat{u})}^{cpu} + v_{i,\pi(\hat{v})}^{cpu}}{2}, \forall \hat{u}\hat{v} \in \hat{L}_i, \forall \hat{u}\hat{v} \in \hat{V}_i$$,
+where, $v_{i,uv}^{bw}$ is the relative cost of bandwidth,  $v_{i,\pi(\hat{u})}^{cpu}$\ and $v_{i,\pi(\hat{v})}^{cpu}$ are the relative costs of CPU calculated as follows:\\
+$$v_{i,uv}^{bw} = \frac{\max_{uv \in L}C_{uv}^{bw}}{r_{i,uv}^{bw}C_{uv}^{bw} - F_i^{bw}}$$
+$$v_{i,u}^{cpu} = \frac{\max_{u \in V}C_{u}^{cpu}}{r_{i,u}^{cpu}C_{u}^{cpu} - F_i^{cpu}}$$
+$\pi(.)$ is used to obtain the node on which a particular VNF instance is deployed. $z_{i,uv}^{\hat{u}\hat{v}} = 1$, if $\hat{u}\hat{v} \in \hat{L}_i$ traverses $uv \in L$ and $u \in V$. Here, $\hat{L}_i$ represents the set of links in the LFG and $\hat{V}_i$ represents the set of vertices in the LFG. An example of the LFG obtained from Function 1(Figure \ref{fig:lfg_construct}) is shown in Figure \ref{fig:lfg_solve}. In this example, the requested VNF types in $SFCR_i$ are 1,2,3 and 4. The VNF instances corresponding to each type is added in the same column. For example, VNF instances corresponding tu type 1(VNF11, VNF12 and VNF13) are added to the same column. A link is added from source $S_i$ to each of the type 1 VNF instances.
+
+Once the LFG is constructed, we determine the shortest path satisfying the flow request i as shown in the RA-RA algorithm in Figure \ref{fig:RARA}. The cost of the path is the total relative cost of all the links in the path which is calculated as follows:\\
+$$ \sum_{\bar{u}\bar{v} \in \bar{L}_i}\sum_{\hat{u}\hat{v} \in \hat{L}_i} v_{i, \hat{u}\hat{v}} z_{i,\hat{u}\hat{v}}^{\bar{u}\bar{v}}$$,
+Here, $\bar{u}\bar{v} \in \bar{L}_i$ is the set of links in the Service Function Graph(SFG). SFG is obtained by concatenating the source node, VNF instance types and destination node in $SFCR_i$ in that order. $z_{i,\hat{u}\hat{v}}^{\bar{u}\bar{v}} = 1$, if $\bar{u}\bar{v} \in \bar{L}_i$ traverses $\hat{u}\hat{v} \in \hat{L}_i$.
+The path computed should have minimum cost and satisfy the following constraints:\\
+$$\sum_{\bar{u}\bar{v} \in \bar{L}_i} F_i^{bw} z_{i, uv}^{\bar{u},\bar{v}} \le r_{i,uv}^{bw}C_{uv}^{bw}, \forall uv \in L$$
+$$\sum_{\bar{u} \in \bar{V}_i}\sum_{m \in M} F_i^{cpu}x_{i,m}^{\bar{u}}y_u^m \le r_{i,u}^{cpu}C_u^{cpu}, \forall u \in V$$
+The above constraints ensure that the bandwidth and CPU consumption of a flow does not exceed the capacity of a particular link or a node respectively in the network. $z_{i, uv}^{\bar{u},\bar{v}} = 1$ if $\bar{u}\bar{v}$ traverses node u. $x_{i,m}^{\bar{u}} = 1$ if $\bar{u}$ is served by VNF instance m and $y_u^m = 1$ if VNF instance m is hosted on u. If a flow does not satisfy these constraints RA-RA computes the next best flow. This continues for a total of K iterations. If the optimal path is not found after K iterations, the flow is rejected.
+
+In the LFG graph shown in Figure \ref{fig:lfg_solve}, if the shortest path obtained is $S_i \rightarrow VNF11 \rightarrow VNF21 \rightarrow VNF31 \rightarrow VNF41 \rightarrow T_i$, this path is checked for the above constraints. If the path satisfies the constraints, the flow is routed through the path and the resource costs are updated.
+
+\fig{width=\columnwidth}{RA-RA-new}{\textmd{RA-RA Algorithm \cite{ref:paper2}}}{fig:RARA}
+\fig{width=\columnwidth}{LFG}{\textmd{LFG Construction \cite{ref:paper2}}}{fig:lfg_construct}
+\fig{width=\columnwidth}{LFG-solve}{\textmd{LFG obtained from Function 1 \cite{ref:paper2}}}{fig:lfg_solve}
